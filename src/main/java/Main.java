@@ -61,14 +61,13 @@ public class Main {
             String objectHash = getObjectHash(fileName);
             String grandParentDirPath = "./.git/objects";
             File grandParentDir = new File(grandParentDirPath);
-
             String parentPath = objectHash.substring(0, 2);
             File parentDir = new File(grandParentDir, parentPath);
-
+            parentDir.mkdirs();
             File filePath = new File(parentDir, objectHash.substring(2));
-
             try {
               filePath.createNewFile();
+
               System.out.print(objectHash);
             } catch (IOException e) {
               throw new RuntimeException(e);
