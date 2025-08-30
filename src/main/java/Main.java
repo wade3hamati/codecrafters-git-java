@@ -58,6 +58,7 @@ public class Main {
        case "hash-object" -> {
          switch(args[1]){
            case "-w" -> {
+
              String fileName = args[2];
              String objectHash = getObjectHash(fileName);
              String grandParentDirPath = "./.git/objects";
@@ -68,21 +69,39 @@ public class Main {
              parentDir.mkdirs();
 
              File filePath = new File(parentDir, objectHash.substring(2));
-             FileInputStream fis = new FileInputStream(fileName);
-             FileOutputStream fos = new FileOutputStream(filePath);
-             DeflaterOutputStream dos = new DeflaterOutputStream(fos);
 
-             byte[] buffer = new byte[1024];
-             int len;
-             while ((len = fis.read(buffer)) != -1) {
-               dos.write(buffer, 0, len);
+             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+             int charCount = 0;
+             int spaceCount = 0;
+
+             try (FileInputStream fis = new FileInputStream(fileName)) {
+               int ch;
+               while ((ch = fis.read()) != -1) {
+                 buffer.write(ch);
+                 charCount++;
+                 if (Character.isWhitespace(ch)) {
+                   spaceCount++;
+                 }
+               }
              }
 
-             if (dos != null) {
-               dos.close();
-             }
-             if (fis != null) {
-               fis.close();
+             String prependedContent = Integer.toString(spaceCount + charCount);
+             byte[] prependedBytes = prependedContent.getBytes();
+
+             // Combine the prepended content and the original file content
+             ByteArrayInputStream baisPrepend = new ByteArrayInputStream(prependedBytes);
+             ByteArrayInputStream baisOriginal = new ByteArrayInputStream(buffer.toByteArray());
+             SequenceInputStream combinedStream = new SequenceInputStream(baisPrepend, baisOriginal);
+
+             // Compress and write to the new file
+             try (DeflaterOutputStream dos = new DeflaterOutputStream(new FileOutputStream(filePath))) {
+               byte[] readBuffer = new byte[1024];
+               int len;
+               while ((len = combinedStream.read(readBuffer)) != -1) {
+                 dos.write(readBuffer, 0, len);
+               }
+             } finally {
+               combinedStream.close();
              }
 
              try {
