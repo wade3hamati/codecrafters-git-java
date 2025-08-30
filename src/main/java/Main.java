@@ -1,10 +1,8 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -75,9 +73,9 @@ public class Main {
 
              String objectHash = getObjectHash(result);
 
-             String grandParentDirPath = "./.git/objects/" + objectHash.substring(0,2) + "/";
-             String filePath = grandParentDirPath + objectHash.substring(2);
-             File newFile = new File(filePath);
+             String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
+             String filePath = parentDir + objectHash.substring(2);
+             File newFile = new File(parentDir, objectHash.substring(2));
 
              try{
                newFile.createNewFile();
