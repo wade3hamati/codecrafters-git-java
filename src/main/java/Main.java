@@ -75,6 +75,7 @@ public class Main {
 
              String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
              String filePath = parentDir + objectHash.substring(2);
+             new File(filePath).mkdirs();
              File newFile = new File(parentDir, objectHash.substring(2));
 
              try{
