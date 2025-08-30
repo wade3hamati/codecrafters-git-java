@@ -17,8 +17,6 @@ public class Main {
     System.err.println("Logs from your program will appear here!");
 
      final String firstCommand = args[0];
-     final String secondCommand = args[1];
-     final String thirdCommand = args[2];
 
      switch (firstCommand) {
        case "init" -> {
@@ -36,9 +34,9 @@ public class Main {
          }
        }
        case "cat-file" -> {
-         switch(secondCommand){
+         switch(args[1]){
            case "-p" -> {
-               String objectHash = thirdCommand;
+               String objectHash = args[2];
 
                String dir = "./.git/objects/" + objectHash.substring(0, 2) + "/";
 
