@@ -40,7 +40,7 @@ public class Main {
            case "-p" -> {
                String objectHash = thirdCommand;
 
-               String dir = "../../../.git/objects/" + objectHash.substring(0, 2) + "/";
+               String dir = ".git/objects/" + objectHash.substring(0, 2) + "/";
 
                File compressedFilePath = new File(dir + objectHash.substring(2));
 
