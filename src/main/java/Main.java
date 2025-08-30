@@ -5,15 +5,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 public class Main {
   public static void main(String[] args) throws FileNotFoundException {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     System.err.println("Logs from your program will appear here!");
-
-//     Uncomment this block to pass the first stage
 
      final String firstCommand = args[0];
      final String secondCommand = args[1];
@@ -35,30 +36,31 @@ public class Main {
          }
        }
        case "cat-file" -> {
-
          switch(secondCommand){
-
            case "-p" -> {
-             String objectHash = getObjectHash(thirdCommand);
+               String objectHash = thirdCommand;
 
-             String dir = ".git/objects/" + objectHash.substring(0,2);
+               String dir = "../../../.git/objects/" + objectHash.substring(0, 2) + "/";
 
-             File compressedFilePath = new File(dir + objectHash.substring(2));
+               File compressedFilePath = new File(dir + objectHash.substring(2));
 
-             StringBuilder content = new StringBuilder();
+               StringBuilder content = new StringBuilder();
 
-             try (FileInputStream fis = new FileInputStream(compressedFilePath);
-                  InflaterInputStream iis = new InflaterInputStream(fis);
-                  InputStreamReader isr = new InputStreamReader(iis);
-                  BufferedReader br = new BufferedReader(isr)) {
 
-               String line;
-               while ((line = br.readLine()) != null) {
-                 content.append(line);
-               }
-             } catch (IOException e) {
+               try (FileInputStream fis = new FileInputStream(compressedFilePath);
+                    InflaterInputStream iis = new InflaterInputStream(fis);
+                    InputStreamReader isr = new InputStreamReader(iis);
+                    BufferedReader br = new BufferedReader(isr)) {
+
+                 String line;
+                 while ((line = br.readLine()) != null) {
+                   content.append(line);
+                 }
+                 System.out.println(content.substring(content.indexOf("\0") + 1));
+
+               } catch (IOException e) {
                  throw new RuntimeException(e);
-             }
+               }
            }
 
            case "-t" -> {
