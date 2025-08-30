@@ -85,7 +85,7 @@ public class Main {
                }
              }
 
-             String prependedContent = Integer.toString(spaceCount + charCount);
+             String prependedContent = "blob "  + (spaceCount + charCount) + ".";
              byte[] prependedBytes = prependedContent.getBytes();
 
              // Combine the prepended content and the original file content
