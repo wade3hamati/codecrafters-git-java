@@ -62,14 +62,6 @@ public class Main {
                  throw new RuntimeException(e);
                }
            }
-
-           case "-t" -> {
-
-           }
-
-           case "-s" -> {
-
-           }
          }
          String objectHash = getObjectHash(secondCommand);
 
