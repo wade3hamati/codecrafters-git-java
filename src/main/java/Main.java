@@ -77,10 +77,13 @@ public class Main {
              try (FileInputStream fis = new FileInputStream(fileName)) {
                int ch;
                while ((ch = fis.read()) != -1) {
-                 buffer.write(ch);
-                 charCount++;
-                 if (Character.isWhitespace(ch)) {
-                   spaceCount++;
+                 // Do not count newline, carriage return, or null terminator
+                 if (ch != '\n' && ch != '\r' && ch != '\0') {
+                   buffer.write(ch);
+                   charCount++;
+                   if (Character.isWhitespace(ch)) {
+                     spaceCount++;
+                   }
                  }
                }
              }
