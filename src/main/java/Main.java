@@ -56,7 +56,7 @@ public class Main {
                  while ((line = br.readLine()) != null) {
                    content.append(line);
                  }
-                 System.out.println(content.substring(content.indexOf("\0") + 1));
+                 System.out.print(content.substring(content.indexOf("\0") + 1));
 
                } catch (IOException e) {
                  throw new RuntimeException(e);
