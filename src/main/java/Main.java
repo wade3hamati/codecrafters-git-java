@@ -75,7 +75,7 @@ public class Main {
 
              String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
              String filePath = parentDir + objectHash.substring(2);
-             boolean bool = new File(filePath).exists()? true : new File(filePath).mkdir();
+             boolean bool = new File(parentDir).exists() || new File(parentDir).mkdir();
              File newFile = new File(parentDir, objectHash.substring(2));
 
              try{
