@@ -77,8 +77,13 @@ public class Main {
 
              String grandParentDirPath = "./.git/objects/" + objectHash.substring(0,2) + "/";
              String filePath = grandParentDirPath + objectHash.substring(2);
-             new File(filePath).mkdirs();
+             File newFile = new File(filePath);
 
+             try{
+               newFile.createNewFile();
+             } catch (IOException e) {
+               throw new RuntimeException(e);
+             }
              try (FileOutputStream fos = new FileOutputStream(filePath);
                   DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
                dos.write(result);
