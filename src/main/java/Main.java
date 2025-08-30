@@ -40,12 +40,11 @@ public class Main {
            case "-p" -> {
                String objectHash = thirdCommand;
 
-               String dir = ".git/objects/" + objectHash.substring(0, 2) + "/";
+               String dir = "./.git/objects/" + objectHash.substring(0, 2) + "/";
 
                File compressedFilePath = new File(dir + objectHash.substring(2));
 
                StringBuilder content = new StringBuilder();
-
 
                try (FileInputStream fis = new FileInputStream(compressedFilePath);
                     InflaterInputStream iis = new InflaterInputStream(fis);
@@ -63,24 +62,6 @@ public class Main {
                }
            }
          }
-         String objectHash = getObjectHash(secondCommand);
-
-         String parentPath = "./.git/objects/";
-         String subDirName = objectHash.substring(0,2);
-
-         File parent = new File(".git/objects/", subDirName);
-         parent.mkdirs();
-         File newObj = new File(parent, objectHash.substring(2));
-//         String newObjContent = "blob" +
-         try{
-           newObj.createNewFile();
-//           Files.write(newObj.toPath(), "blob ");
-         }catch (IOException e){
-           throw new RuntimeException(e);
-         }
-
-
-
        }
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
