@@ -80,7 +80,6 @@ public class Main {
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
   }
-
   // question: primitive type vs non-primitive type passing into function
   // question: string vs string buffer vs StringBuilder
 
