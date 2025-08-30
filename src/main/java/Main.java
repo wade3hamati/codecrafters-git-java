@@ -1,8 +1,10 @@
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -60,60 +62,30 @@ public class Main {
            case "-w" -> {
 
              String fileName = args[2];
-             String objectHash = getObjectHash(fileName);
-             String grandParentDirPath = "./.git/objects";
-             File grandParentDir = new File(grandParentDirPath);
-             String parentPath = objectHash.substring(0, 2);
-             File parentDir = new File(grandParentDir, parentPath);
+             File file = new File(fileName);
 
-             parentDir.mkdirs();
-
-             File filePath = new File(parentDir, objectHash.substring(2));
-
-             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-             int charCount = 0;
-             int spaceCount = 0;
-
-             try (FileInputStream fis = new FileInputStream(fileName)) {
-               int ch;
-               while ((ch = fis.read()) != -1) {
-                 // Do not count newline, carriage return, or null terminator
-                 if (ch != '\n' && ch != '\r' && ch != '\0') {
-                   buffer.write(ch);
-                   charCount++;
-                   if (Character.isWhitespace(ch)) {
-                     spaceCount++;
-                   }
-                 }
-               }
+             if(!file.exists()){
+               throw new RuntimeException("File does not exist");
              }
+             byte[] content = Files.readAllBytes(file.toPath());
+             byte[] header = ("blob " + content.length + "\0").getBytes();
+             byte [] result = new byte[content.length + header.length];
+             System.arraycopy(header, 0, result, 0, header.length);
+             System.arraycopy(content, 0, result, header.length, content.length);
 
-             String prependedContent = "blob "  + (spaceCount + charCount) + ".";
-             byte[] prependedBytes = prependedContent.getBytes();
+             String objectHash = getObjectHash(result);
 
-             // Combine the prepended content and the original file content
-             ByteArrayInputStream baisPrepend = new ByteArrayInputStream(prependedBytes);
-             ByteArrayInputStream baisOriginal = new ByteArrayInputStream(buffer.toByteArray());
-             SequenceInputStream combinedStream = new SequenceInputStream(baisPrepend, baisOriginal);
+             String grandParentDirPath = "./.git/objects/" + objectHash.substring(0,2) + "/";
+             String filePath = grandParentDirPath + objectHash.substring(2);
+             new File(filePath).mkdirs();
 
-             // Compress and write to the new file
-             try (DeflaterOutputStream dos = new DeflaterOutputStream(new FileOutputStream(filePath))) {
-               byte[] readBuffer = new byte[1024];
-               int len;
-               while ((len = combinedStream.read(readBuffer)) != -1) {
-                 dos.write(readBuffer, 0, len);
-               }
-             } finally {
-               combinedStream.close();
+             try (FileOutputStream fos = new FileOutputStream(filePath);
+                  DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
+               dos.write(result);
+               System.out.print(objectHash);
+             } catch (IOException e) {
+               throw new RuntimeException(e);
              }
-
-             try {
-              filePath.createNewFile();
-
-              System.out.print(objectHash);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
            }
          }
        }
@@ -123,11 +95,11 @@ public class Main {
   // question: primitive type vs non-primitive type passing into function
   // question: string vs string buffer vs StringBuilder
 
-  public static String getObjectHash(String input){
+  public static String getObjectHash(byte[] input){
     try{
       MessageDigest md = MessageDigest.getInstance("SHA-1");
 
-      byte[] messageDigest = md.digest(input.getBytes());
+      byte[] messageDigest = md.digest(input);
 
       BigInteger no = new BigInteger(1, messageDigest);
 
