@@ -65,7 +65,7 @@ public class Main {
          }
          String objectHash = getObjectHash(secondCommand);
 
-         String parentPath = ".git/objects/";
+         String parentPath = "./.git/objects/";
          String subDirName = objectHash.substring(0,2);
 
          File parent = new File(".git/objects/", subDirName);
