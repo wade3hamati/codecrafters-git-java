@@ -3,10 +3,11 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 public class Main {
-  public static void main(String[] args) throws FileNotFoundException {
+  public static void main(String[] args) throws IOException {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
 
      final String firstCommand = args[0];
@@ -57,15 +58,34 @@ public class Main {
        case "hash-object" -> {
          switch(args[1]){
            case "-w" -> {
-            String fileName = args[2];
-            String objectHash = getObjectHash(fileName);
-            String grandParentDirPath = "./.git/objects";
-            File grandParentDir = new File(grandParentDirPath);
-            String parentPath = objectHash.substring(0, 2);
-            File parentDir = new File(grandParentDir, parentPath);
-            parentDir.mkdirs();
-            File filePath = new File(parentDir, objectHash.substring(2));
-            try {
+             String fileName = args[2];
+             String objectHash = getObjectHash(fileName);
+             String grandParentDirPath = "./.git/objects";
+             File grandParentDir = new File(grandParentDirPath);
+             String parentPath = objectHash.substring(0, 2);
+             File parentDir = new File(grandParentDir, parentPath);
+
+             parentDir.mkdirs();
+
+             File filePath = new File(parentDir, objectHash.substring(2));
+             FileInputStream fis = new FileInputStream(fileName);
+             FileOutputStream fos = new FileOutputStream(filePath);
+             DeflaterOutputStream dos = new DeflaterOutputStream(fos);
+
+             byte[] buffer = new byte[1024];
+             int len;
+             while ((len = fis.read(buffer)) != -1) {
+               dos.write(buffer, 0, len);
+             }
+
+             if (dos != null) {
+               dos.close();
+             }
+             if (fis != null) {
+               fis.close();
+             }
+
+             try {
               filePath.createNewFile();
 
               System.out.print(objectHash);
