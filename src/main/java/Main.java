@@ -3,6 +3,8 @@ import java.math.BigInteger;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -91,6 +93,54 @@ public class Main {
                throw new RuntimeException(e);
              }
            }
+         }
+       }
+       case "ls-tree" -> {
+
+         String objectHash = args[2];
+
+         String dir = "./.git/objects/" + objectHash.substring(0, 2) + "/";
+         File compressedFilePath = new File(dir + objectHash.substring(2));
+
+         try (FileInputStream fis = new FileInputStream(compressedFilePath);
+              InflaterInputStream iis = new InflaterInputStream(fis)) {
+
+           byte[] decompressed = iis.readAllBytes();
+
+           int nullIndex = 0;
+           while (decompressed[nullIndex] != 0) {
+             nullIndex++;
+           }
+
+           int i = nullIndex + 1;
+
+           while ( i < decompressed.length) {
+             int spaceIndex = i;
+             while(decompressed[spaceIndex] != ' '){
+               spaceIndex++;
+             }
+             String mode = new String(decompressed, i, spaceIndex - i);
+
+             i = spaceIndex + 1;
+             int nullTerminator = i;
+             while(decompressed[nullTerminator] != 0){
+               nullTerminator++;
+             }
+             String filename = new String(decompressed, i, nullTerminator - i);
+             i = nullTerminator + 1;
+
+             byte[] shaBytes = Arrays.copyOfRange(decompressed, i, i + 20);
+             StringBuilder shaHex = new StringBuilder();
+             for (byte b : shaBytes) {
+               shaHex.append(String.format("%02x", b));
+             }
+             i += 20;
+
+             System.out.printf("%s%n", filename);
+           }
+
+         } catch (IOException e) {
+           throw new RuntimeException(e);
          }
        }
        default -> System.out.println("Unknown Command: " + firstCommand);
