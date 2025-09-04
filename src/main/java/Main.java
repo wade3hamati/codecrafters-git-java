@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -224,6 +225,19 @@ public class Main {
     if(!file.exists()){
       throw new RuntimeException("File does not exist");
     }
+
+    ArrayList<Path> paths = new ArrayList<>();
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(file.toPath())) {
+       for (Path path : stream) {
+         if(Objects.equals(path.getFileName().toString(), ".git") ||
+                 Objects.equals(path.getFileName().toString(), ".idea")){
+           continue;
+         }
+         paths.add(path);
+       }
+    }
+    paths.sort(Comparator.comparing(p -> p.getFileName().toString()));
+
     ByteArrayOutputStream content = new ByteArrayOutputStream();
 
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(file.toPath())) {
