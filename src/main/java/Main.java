@@ -184,21 +184,21 @@ public class Main {
 
     String objectHash = getObjectHash40(result);
 
-    String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
-    String filePath = parentDir + objectHash.substring(2);
-    boolean bool = new File(parentDir).exists() || new File(parentDir).mkdir();
-    File newFile = new File(parentDir, objectHash.substring(2));
+    String dirPath = "./.git/objects/" + objectHash.substring(0, 2);
+    String filePath = dirPath + "/" + objectHash.substring(2);
 
-    try{
-      newFile.createNewFile();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    File dir = new File(dirPath);
+    if (!dir.exists() && !dir.mkdirs()) {
+      throw new IOException("Failed to create directory: " + dirPath);
     }
-    try (FileOutputStream fos = new FileOutputStream(filePath);
+
+    File objectFile = new File(filePath);
+    if (objectFile.exists()) {
+      return objectHash;
+    }
+    try (FileOutputStream fos = new FileOutputStream(objectFile);
          DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
       dos.write(result);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
 
     return objectHash;
