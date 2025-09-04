@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -120,32 +121,46 @@ public class Main {
        }
        case "write-tree" -> {
          Path dir = Paths.get("./");
-         ArrayList<Path> filePaths = new ArrayList<>();
-         ArrayList<Path> dirPaths = new ArrayList<>();
+         System.out.println(createTree(dir.toFile()));
 
-         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-           for (Path path : stream) {
-             if (Files.isDirectory(path)) {
-               dirPaths.add(path);
-             } else if (Files.isRegularFile(path)) {
-               filePaths.add(path);
-             }
-           }
-         }
-         filePaths.forEach(path -> {
-             try {
-                 createBlob(path.toFile());
-             } catch (IOException e) {
-                 throw new RuntimeException(e);
-             }
-         });
-         dirPaths.forEach(path -> {
-             try {
-                 createTree(path.toFile());
-             } catch (IOException e) {
-                 throw new RuntimeException(e);
-             }
-         });
+//         ArrayList<Path> filePaths = new ArrayList<>();
+//         ArrayList<Path> dirPaths = new ArrayList<>();
+//
+//         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+//           for (Path path : stream) {
+//             if (Files.isDirectory(path)) {
+//               if(Objects.equals(path.getFileName().toString(), ".git") ||
+//                       Objects.equals(path.getFileName().toString(), ".idea")){
+//                 continue;
+//               }
+//               dirPaths.add(path);
+//             } else if (Files.isRegularFile(path)) {
+//               filePaths.add(path);
+//             }
+//           }
+//         }
+//         for (Path path : dirPaths) {
+//           if(Objects.equals(path.getFileName().toString(), ".git")){
+//             dirPaths.remove(path);
+//           }
+//           if(Objects.equals(path.getFileName().toString(), ".idea")){
+//             dirPaths.remove(path);
+//           }
+//         }
+//         filePaths.forEach(path -> {
+//             try {
+//                 createBlob(path.toFile());
+//             } catch (IOException e) {
+//                 throw new RuntimeException(e);
+//             }
+//         });
+//         dirPaths.forEach(path -> {
+//             try {
+//                 createTree(path.toFile());
+//             } catch (IOException e) {
+//                 throw new RuntimeException(e);
+//             }
+//         });
        }
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
@@ -217,6 +232,10 @@ public class Main {
         byte[] shaBytes;
 
         if (Files.isDirectory(path)) {
+          if(Objects.equals(path.getFileName().toString(), ".git") ||
+                  Objects.equals(path.getFileName().toString(), ".idea")){
+            continue;
+          }
           String subtreeHash = createTree(path.toFile());
           shaBytes = hexToBytes(subtreeHash);
           mode = "40000"; // directory
