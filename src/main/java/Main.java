@@ -122,46 +122,8 @@ public class Main {
        }
        case "write-tree" -> {
          Path dir = Paths.get("./");
-         System.out.println(createTree(dir.toFile()));
-
-//         ArrayList<Path> filePaths = new ArrayList<>();
-//         ArrayList<Path> dirPaths = new ArrayList<>();
-//
-//         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-//           for (Path path : stream) {
-//             if (Files.isDirectory(path)) {
-//               if(Objects.equals(path.getFileName().toString(), ".git") ||
-//                       Objects.equals(path.getFileName().toString(), ".idea")){
-//                 continue;
-//               }
-//               dirPaths.add(path);
-//             } else if (Files.isRegularFile(path)) {
-//               filePaths.add(path);
-//             }
-//           }
-//         }
-//         for (Path path : dirPaths) {
-//           if(Objects.equals(path.getFileName().toString(), ".git")){
-//             dirPaths.remove(path);
-//           }
-//           if(Objects.equals(path.getFileName().toString(), ".idea")){
-//             dirPaths.remove(path);
-//           }
-//         }
-//         filePaths.forEach(path -> {
-//             try {
-//                 createBlob(path.toFile());
-//             } catch (IOException e) {
-//                 throw new RuntimeException(e);
-//             }
-//         });
-//         dirPaths.forEach(path -> {
-//             try {
-//                 createTree(path.toFile());
-//             } catch (IOException e) {
-//                 throw new RuntimeException(e);
-//             }
-//         });
+         String treeHash = createTree(dir.toFile());
+         System.out.println(treeHash);
        }
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
