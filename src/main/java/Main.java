@@ -8,15 +8,14 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 public class Main {
   public static void main(String[] args) throws IOException {
 
-     final String firstCommand = args[0];
+//     final String firstCommand = args[0];
+     String firstCommand = "write-tree";
 
      switch (firstCommand) {
        case "init" -> {
@@ -128,9 +127,9 @@ public class Main {
          try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
            for (Path path : stream) {
              if (Files.isDirectory(path)) {
-               filePaths.add(path);
-             } else if (Files.isRegularFile(path)) {
                dirPaths.add(path);
+             } else if (Files.isRegularFile(path)) {
+               filePaths.add(path);
              }
            }
          }
