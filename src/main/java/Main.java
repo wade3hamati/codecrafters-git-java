@@ -240,34 +240,33 @@ public class Main {
 
     ByteArrayOutputStream content = new ByteArrayOutputStream();
 
-    try (DirectoryStream<Path> stream = Files.newDirectoryStream(file.toPath())) {
-      for (Path path : stream) {
-        String mode;
-        byte[] shaBytes;
+    for (Path path : paths) {
+      String mode;
+      byte[] shaBytes;
 
-        if (Files.isDirectory(path)) {
-          if(Objects.equals(path.getFileName().toString(), ".git") ||
-                  Objects.equals(path.getFileName().toString(), ".idea")){
-            continue;
-          }
-          String subtreeHash = createTree(path.toFile());
-          shaBytes = hexToBytes(subtreeHash);
-          mode = "40000"; // directory
-        } else {
-          String blobHash = createBlob(path.toFile());
-          shaBytes = hexToBytes(blobHash);
-          mode = "100644"; // regular file
+      if (Files.isDirectory(path)) {
+        if(Objects.equals(path.getFileName().toString(), ".git") ||
+                Objects.equals(path.getFileName().toString(), ".idea")){
+          continue;
         }
-
-        content.write(mode.getBytes());
-        content.write(' ');
-
-        content.write(path.getFileName().toString().getBytes());
-        content.write(0);
-
-        content.write(shaBytes);
+        String subtreeHash = createTree(path.toFile());
+        shaBytes = hexToBytes(subtreeHash);
+        mode = "40000"; // directory
+      } else {
+        String blobHash = createBlob(path.toFile());
+        shaBytes = hexToBytes(blobHash);
+        mode = "100644"; // regular file
       }
+
+      content.write(mode.getBytes());
+      content.write(' ');
+
+      content.write(path.getFileName().toString().getBytes());
+      content.write(0);
+
+      content.write(shaBytes);
     }
+
 
     byte[] body = content.toByteArray();
     byte[] header = ("tree " + body.length + "\0").getBytes();
@@ -298,12 +297,16 @@ public class Main {
     return objectHash;
   }
 
-  private static byte[] hexToBytes(String hex) {
-    int len = hex.length();
-    byte[] result = new byte[len / 2];
-    for (int i = 0; i < len; i += 2) {
-      result[i / 2] = (byte) Integer.parseInt(hex.substring(i, i + 2), 16);
+  public static byte[] hexToBytes(String hex) {
+    if (hex.length() != 40) {
+      throw new IllegalArgumentException("Expected 40-character SHA-1 hex string");
     }
-    return result;
+    byte[] bytes = new byte[20];
+    for (int i = 0; i < 20; i++) {
+      bytes[i] = (byte) ((Character.digit(hex.charAt(i*2), 16) << 4)
+              + Character.digit(hex.charAt(i*2 + 1), 16));
+    }
+    return bytes;
   }
+
 }
