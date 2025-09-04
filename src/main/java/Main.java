@@ -1,5 +1,6 @@
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -155,9 +156,15 @@ public class Main {
            content.write(commitMessageBytes);
            content.write((byte) '\n');
 
-//           System.out.println(content);
+           byte[] body = content.toByteArray();
+           String header = "commit " + body.length + "\0";
+           ByteArrayOutputStream finalObject = new ByteArrayOutputStream();
+           finalObject.write(header.getBytes());
+           finalObject.write(body);
 
-           String commitHash = getObjectHash40(content.toByteArray());
+           byte[] finalBytes = finalObject.toByteArray();
+
+           String commitHash = getObjectHash40(finalBytes);
 
            String parentDir = "./.git/objects/" + commitHash.substring(0, 2);
            String filePath = parentDir + "/" + commitHash.substring(2);
