@@ -14,8 +14,7 @@ import java.util.zip.InflaterInputStream;
 public class Main {
   public static void main(String[] args) throws IOException {
 
-//     final String firstCommand = args[0];
-     String firstCommand = "write-tree";
+     final String firstCommand = args[0];
 
      switch (firstCommand) {
        case "init" -> {
