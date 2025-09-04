@@ -262,7 +262,26 @@ public class Main {
     System.arraycopy(header, 0, result, 0, header.length);
     System.arraycopy(body, 0, result, header.length, body.length);
 
-    return getObjectHash40(result);
+    String objectHash = getObjectHash40(result);
+
+    String dirPath = "./.git/objects/" + objectHash.substring(0, 2);
+    String filePath = dirPath + "/" + objectHash.substring(2);
+
+    File dir = new File(dirPath);
+    if (!dir.exists() && !dir.mkdirs()) {
+      throw new IOException("Failed to create directory: " + dirPath);
+    }
+
+    File objectFile = new File(filePath);
+    if (objectFile.exists()) {
+      return objectHash;
+    }
+    try (FileOutputStream fos = new FileOutputStream(objectFile);
+         DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
+      dos.write(result);
+    }
+
+    return objectHash;
   }
 
   private static byte[] hexToBytes(String hex) {
