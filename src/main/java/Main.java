@@ -1,10 +1,15 @@
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -64,34 +69,7 @@ public class Main {
              String fileName = args[2];
              File file = new File(fileName);
 
-             if(!file.exists()){
-               throw new RuntimeException("File does not exist");
-             }
-             byte[] content = Files.readAllBytes(file.toPath());
-             byte[] header = ("blob " + content.length + "\0").getBytes();
-             byte [] result = new byte[content.length + header.length];
-             System.arraycopy(header, 0, result, 0, header.length);
-             System.arraycopy(content, 0, result, header.length, content.length);
-
-             String objectHash = getObjectHash(result);
-
-             String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
-             String filePath = parentDir + objectHash.substring(2);
-             boolean bool = new File(parentDir).exists() || new File(parentDir).mkdir();
-             File newFile = new File(parentDir, objectHash.substring(2));
-
-             try{
-               newFile.createNewFile();
-             } catch (IOException e) {
-               throw new RuntimeException(e);
-             }
-             try (FileOutputStream fos = new FileOutputStream(filePath);
-                  DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
-               dos.write(result);
-               System.out.print(objectHash);
-             } catch (IOException e) {
-               throw new RuntimeException(e);
-             }
+             System.out.print(createBlob(file));
            }
          }
        }
@@ -143,13 +121,42 @@ public class Main {
            throw new RuntimeException(e);
          }
        }
+       case "write-tree" -> {
+         Path dir = Paths.get("./");
+         ArrayList<Path> filePaths = new ArrayList<>();
+         ArrayList<Path> dirPaths = new ArrayList<>();
+
+         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+           for (Path path : stream) {
+             if (Files.isDirectory(path)) {
+               filePaths.add(path);
+             } else if (Files.isRegularFile(path)) {
+               dirPaths.add(path);
+             }
+           }
+         }
+         filePaths.forEach(path -> {
+             try {
+                 createBlob(path.toFile());
+             } catch (IOException e) {
+                 throw new RuntimeException(e);
+             }
+         });
+         dirPaths.forEach(path -> {
+             try {
+                 createTree(path.toFile());
+             } catch (IOException e) {
+                 throw new RuntimeException(e);
+             }
+         });
+       }
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
   }
   // question: primitive type vs non-primitive type passing into function
   // question: string vs string buffer vs StringBuilder
 
-  public static String getObjectHash(byte[] input){
+  public static String getObjectHash40(byte[] input){
     try{
       MessageDigest md = MessageDigest.getInstance("SHA-1");
 
@@ -168,5 +175,93 @@ public class Main {
     catch (NoSuchAlgorithmException e){
       throw new RuntimeException(e);
     }
+  }
+
+  public static String createBlob(File file) throws IOException {
+    if(!file.exists()){
+      throw new RuntimeException("File does not exist");
+    }
+    byte[] content = Files.readAllBytes(file.toPath());
+    byte[] header = ("blob " + content.length + "\0").getBytes();
+    byte [] result = new byte[content.length + header.length];
+    System.arraycopy(header, 0, result, 0, header.length);
+    System.arraycopy(content, 0, result, header.length, content.length);
+
+    String objectHash = getObjectHash40(result);
+
+    String parentDir = "./.git/objects/" + objectHash.substring(0,2) + "/";
+    String filePath = parentDir + objectHash.substring(2);
+    boolean bool = new File(parentDir).exists() || new File(parentDir).mkdir();
+    File newFile = new File(parentDir, objectHash.substring(2));
+
+    try{
+      newFile.createNewFile();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    try (FileOutputStream fos = new FileOutputStream(filePath);
+         DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
+      dos.write(result);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return objectHash;
+  }
+
+  public static String createTree(File file) throws IOException {
+
+    if(!file.exists()){
+      throw new RuntimeException("File does not exist");
+    }
+    ByteArrayOutputStream content = new ByteArrayOutputStream();
+
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(file.toPath())) {
+      for (Path path : stream) {
+        String mode;
+        byte[] shaBytes;
+
+        if (Files.isDirectory(path)) {
+          // Recursively create subtree
+          String subtreeHash = createTree(path.toFile());
+          shaBytes = hexToBytes(subtreeHash); // store raw SHA
+          mode = "40000"; // directory
+        } else {
+          // Blob
+          String blobHash = createBlob(path.toFile());
+          shaBytes = hexToBytes(blobHash);
+          mode = "100644"; // regular file (adjust for execs etc.)
+        }
+
+        // mode + space
+        content.write(mode.getBytes());
+        content.write(' ');
+
+        // filename + null
+        content.write(path.getFileName().toString().getBytes());
+        content.write(0);
+
+        // 20-byte hash
+        content.write(shaBytes);
+      }
+    }
+
+    byte[] body = content.toByteArray();
+    byte[] header = ("tree " + body.length + "\0").getBytes();
+
+    byte[] result = new byte[body.length + header.length];
+    System.arraycopy(header, 0, result, 0, header.length);
+    System.arraycopy(body, 0, result, header.length, body.length);
+
+    return getObjectHash40(result);
+  }
+
+  private static byte[] hexToBytes(String hex) {
+    int len = hex.length();
+    byte[] result = new byte[len / 2];
+    for (int i = 0; i < len; i += 2) {
+      result[i / 2] = (byte) Integer.parseInt(hex.substring(i, i + 2), 16);
+    }
+    return result;
   }
 }
