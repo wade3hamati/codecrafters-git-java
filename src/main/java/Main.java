@@ -17,6 +17,11 @@ public class Main {
   public static void main(String[] args) throws IOException {
 
     final String firstCommand = args[0];
+//    String firstCommand = "commit-tree";
+//    String secondCommand = "3ce0a0146edbd1e4f93431ec8c9f7a78dabd2dc6";
+//    String thirdCommand = "-p";
+//    String forthCommand = "cdd1e701fd391175ba6b2c746bc64c7744766511";
+//    String fifthCommand = "\"commit message\"";
 
     switch (firstCommand) {
      case "init" -> {
@@ -130,51 +135,50 @@ public class Main {
          case "-p" -> {
            String treeSha = args[1];
            String commitSha = args[3];
-           switch(args[4]){
-             case "-p" -> {
-               ByteArrayOutputStream content = new ByteArrayOutputStream();
 
-               String commitMessage = args[5].substring(1,-2);
-               byte[] commitMessageBytes = commitMessage.getBytes();
-               content.write(commitMessageBytes);
+           ByteArrayOutputStream content = new ByteArrayOutputStream();
 
-               String treeEntry = "tree " + treeSha + "\0";
-               byte[] treeEntryBytes = treeEntry.getBytes();
-               content.write(treeEntryBytes);
+           String treeEntry = "tree " + treeSha + "\0";
+           byte[] treeEntryBytes = treeEntry.getBytes();
+           content.write(treeEntryBytes);
 
-               String parentEntry = "parent " + commitSha + "\0";
-               byte[] parentEntryBytes = parentEntry.getBytes();
-               content.write(parentEntryBytes);
+           String parentEntry = "parent " + commitSha + "\0";
+           byte[] parentEntryBytes = parentEntry.getBytes();
+           content.write(parentEntryBytes);
 
-               String authorEntry = "author Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0";
-               byte[] authorEntryBytes = authorEntry.getBytes();
-               content.write(authorEntryBytes);
+           String authorEntry = "author Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0";
+           byte[] authorEntryBytes = authorEntry.getBytes();
+           content.write(authorEntryBytes);
 
-               String committerEntry = "committer Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0\n";
-               byte[] committerEntryBytes = committerEntry.getBytes();
-               content.write(committerEntryBytes);
+           String committerEntry = "committer Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0\n";
+           byte[] committerEntryBytes = committerEntry.getBytes();
+           content.write(committerEntryBytes);
 
-               String commitHash = getObjectHash40(content.toByteArray());
+           String commitMessage = args[4].substring(1,args[4].length()-1);
+           byte[] commitMessageBytes = commitMessage.getBytes();
+           content.write(commitMessageBytes);
 
-               String parentDir = "./.git/objects/" + commitHash.substring(0, 2);
-               String filePath = parentDir + "/" + commitHash.substring(2);
+           String commitHash = getObjectHash40(content.toByteArray());
 
-               File dir = new File(parentDir);
-               if (!dir.exists() && !dir.mkdirs()) {
-                 throw new IOException("Failed to create directory: " + parentDir);
-               }
+           String parentDir = "./.git/objects/" + commitHash.substring(0, 2);
+           String filePath = parentDir + "/" + commitHash.substring(2);
 
-               File objectFile = new File(filePath);
-               if (objectFile.exists()) {
-                 System.out.println(commitHash);
-               }
-               try (FileOutputStream fos = new FileOutputStream(objectFile);
-                    DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
-                 dos.write(content.toByteArray());
-               }
-               System.out.println(commitHash);
-             }
+           File dir = new File(parentDir);
+           if (!dir.exists() && !dir.mkdirs()) {
+             throw new IOException("Failed to create directory: " + parentDir);
            }
+
+           File objectFile = new File(filePath);
+           if (objectFile.exists()) {
+             System.out.println(commitHash);
+           }
+           try (FileOutputStream fos = new FileOutputStream(objectFile);
+                DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
+             dos.write(content.toByteArray());
+           }
+           System.out.println(commitHash);
+
+
          }
        }
      }
