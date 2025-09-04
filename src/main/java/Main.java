@@ -151,7 +151,7 @@ public class Main {
            content.write(committerEntryBytes);
            content.write((byte) '\n');
 
-           String commitMessage = args[4].substring(1,args[4].length()-1);
+           String commitMessage = args[5].substring(1,args[5].length()-1);
            byte[] commitMessageBytes = commitMessage.getBytes();
            content.write(commitMessageBytes);
            content.write((byte) '\n');
@@ -177,11 +177,9 @@ public class Main {
            File objectFile = new File(filePath);
            try (FileOutputStream fos = new FileOutputStream(objectFile);
                 DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
-             dos.write(content.toByteArray());
+             dos.write(finalObject.toByteArray());
            }
            System.out.println(commitHash);
-
-
          }
        }
      }
