@@ -160,7 +160,7 @@ public class Main {
            content.write(commitMessageBytes);
            content.write((byte) '\n');
 
-           System.out.println(content);
+//           System.out.println(content);
 
            String commitHash = getObjectHash40(content.toByteArray());
 
