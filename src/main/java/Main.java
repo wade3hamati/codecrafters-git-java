@@ -132,30 +132,29 @@ public class Main {
            String commitSha = args[3];
            switch(args[4]){
              case "-p" -> {
+               ByteArrayOutputStream content = new ByteArrayOutputStream();
+
                String commitMessage = args[5].substring(1,-2);
                byte[] commitMessageBytes = commitMessage.getBytes();
+               content.write(commitMessageBytes);
 
                String treeEntry = "tree " + treeSha + "\0";
                byte[] treeEntryBytes = treeEntry.getBytes();
+               content.write(treeEntryBytes);
+
+               String parentEntry = "parent " + commitSha + "\0";
+               byte[] parentEntryBytes = parentEntry.getBytes();
+               content.write(parentEntryBytes);
 
                String authorEntry = "author Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0";
                byte[] authorEntryBytes = authorEntry.getBytes();
+               content.write(authorEntryBytes);
 
-               String committerEntry = "author Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0";
+               String committerEntry = "committer Wadeh Hamati <wade3_hamati@outlook.com> 1243040974 -0700\0\n";
                byte[] committerEntryBytes = committerEntry.getBytes();
+               content.write(committerEntryBytes);
 
-               byte[] content = new byte[
-                       treeEntryBytes.length +
-                       authorEntryBytes.length +
-                       committerEntryBytes.length +
-                       commitMessageBytes.length];
-
-               System.arraycopy(treeEntryBytes, 0, content, 0, treeEntryBytes.length);
-               System.arraycopy(authorEntryBytes, 0, content, treeEntryBytes.length, authorEntryBytes.length);
-               System.arraycopy(committerEntryBytes, 0, content, treeEntryBytes.length + authorEntryBytes.length, committerEntryBytes.length);
-               System.arraycopy(commitMessageBytes, 0, content, treeEntryBytes.length + authorEntryBytes.length + committerEntryBytes.length, commitMessageBytes.length);
-
-               String commitHash = getObjectHash40(content);
+               String commitHash = getObjectHash40(content.toByteArray());
 
                String parentDir = "./.git/objects/" + commitHash.substring(0, 2);
                String filePath = parentDir + "/" + commitHash.substring(2);
@@ -171,7 +170,7 @@ public class Main {
                }
                try (FileOutputStream fos = new FileOutputStream(objectFile);
                     DeflaterOutputStream dos = new DeflaterOutputStream(fos)) {
-                 dos.write(content);
+                 dos.write(content.toByteArray());
                }
                System.out.println(commitHash);
              }
