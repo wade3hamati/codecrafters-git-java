@@ -151,7 +151,7 @@ public class Main {
            content.write(committerEntryBytes);
            content.write((byte) '\n');
 
-           String commitMessage = args[5].substring(1,args[5].length()-1);
+           String commitMessage = args[5].substring(0,args[5].length());
            byte[] commitMessageBytes = commitMessage.getBytes();
            content.write(commitMessageBytes);
            content.write((byte) '\n');
