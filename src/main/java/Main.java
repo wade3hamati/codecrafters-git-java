@@ -16,12 +16,7 @@ import java.util.zip.InflaterInputStream;
 public class Main {
   public static void main(String[] args) throws IOException {
 
-//    final String firstCommand = args[0];
-    String firstCommand = "commit-tree";
-    String secondCommand = "3ce0a0146edbd1e4f93431ec8c9f7a78dabd2dc6";
-    String thirdCommand = "-p";
-    String forthCommand = "cdd1e701fd391175ba6b2c746bc64c7744766511";
-    String fifthCommand = "\"commit message\"";
+    final String firstCommand = args[0];
 
     switch (firstCommand) {
      case "init" -> {
@@ -131,10 +126,10 @@ public class Main {
        System.out.println(treeHash);
      }
      case "commit-tree" -> {
-       switch(thirdCommand){
+       switch(args[2]){
          case "-p" -> {
-           String treeSha = secondCommand;
-           String commitSha = forthCommand;
+           String treeSha = args[1];
+           String commitSha = args[3];
 
            ByteArrayOutputStream content = new ByteArrayOutputStream();
 
@@ -155,7 +150,7 @@ public class Main {
            content.write(committerEntryBytes);
            content.write((byte) '\n');
 
-           String commitMessage = fifthCommand.substring(1,fifthCommand.length()-1);
+           String commitMessage = args[4].substring(1,args[4].length()-1);
            byte[] commitMessageBytes = commitMessage.getBytes();
            content.write(commitMessageBytes);
            content.write((byte) '\n');
