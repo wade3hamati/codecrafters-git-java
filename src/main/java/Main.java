@@ -15,7 +15,6 @@ import java.util.zip.InflaterInputStream;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    // You can use print statements as follows for debugging, they'll be visible when running tests.
 
      final String firstCommand = args[0];
 
@@ -153,8 +152,6 @@ public class Main {
        default -> System.out.println("Unknown Command: " + firstCommand);
      }
   }
-  // question: primitive type vs non-primitive type passing into function
-  // question: string vs string buffer vs StringBuilder
 
   public static String getObjectHash40(byte[] input){
     try{
@@ -222,26 +219,21 @@ public class Main {
         byte[] shaBytes;
 
         if (Files.isDirectory(path)) {
-          // Recursively create subtree
           String subtreeHash = createTree(path.toFile());
-          shaBytes = hexToBytes(subtreeHash); // store raw SHA
+          shaBytes = hexToBytes(subtreeHash);
           mode = "40000"; // directory
         } else {
-          // Blob
           String blobHash = createBlob(path.toFile());
           shaBytes = hexToBytes(blobHash);
-          mode = "100644"; // regular file (adjust for execs etc.)
+          mode = "100644"; // regular file
         }
 
-        // mode + space
         content.write(mode.getBytes());
         content.write(' ');
 
-        // filename + null
         content.write(path.getFileName().toString().getBytes());
         content.write(0);
 
-        // 20-byte hash
         content.write(shaBytes);
       }
     }
